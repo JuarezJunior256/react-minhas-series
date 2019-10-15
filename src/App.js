@@ -1,11 +1,13 @@
 import React from 'react'
+import Header from './Header'
 
 function App() {
+  
   return (
-    <div className="App">
-      <h1>Minhas Series</h1>
+    <div>
+      <Header/>
     </div>
-  );
+  )
 }
 
 export default App
