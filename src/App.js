@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react'
 
 import Generos from './Generos'
+import NovoGenero from './NovoGenero'
 import Header from './Header'
 import axios from 'axios'
 import {
@@ -24,8 +25,8 @@ function App() {
       <div>
         <Header/>
         <Route path='/' exact component = {Home}/>
-        <Route path='/generos' component= {Generos}/>
-        <pre>{JSON.stringify(data)}</pre>
+        <Route path='/generos' exact component= {Generos}/>
+        <Route path='/generos/novo' exact component= {NovoGenero}/>
       </div>
     </Router>
   )
