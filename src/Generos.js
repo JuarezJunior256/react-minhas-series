@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
+import { Link } from 'react-router-dom'
 
 const Generos = () => {
   const [data, setData] = useState([])
@@ -11,12 +12,22 @@ const Generos = () => {
       })
   }, [])
 
+  const deleteGenero = id => {
+    axios.delete('api/genres/' + id).then(res => {
+      const filtrado = data.filter(item => item.id !== id)
+      setData(filtrado)
+    })
+  }
+
   const renderizaLinha = record => {
     return (
       <tr>
         <th scope='row'>{record.id}</th>
         <td>{record.name}</td>
-        <td><button>+</button></td>
+        <td>
+          <button className='btn btn-danger' onClick={() => deleteGenero(record.id) }>Remover</button>
+          <Link to={'/generos/' + record.id}>Editar</Link>
+        </td>
       </tr>
     )
   }
@@ -33,6 +44,7 @@ const Generos = () => {
   return (
     <div className='container'>
       <h1>Genêros</h1>
+      <Link to='/generos/novo'><button className='btn btn-primary'>Novo Genêro</button></Link>
       <table className='table table-dark'>
         <thead>
           <tr>
