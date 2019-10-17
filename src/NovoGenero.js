@@ -10,7 +10,7 @@ const NovoGenero = () => {
     }
 
     const save = () => {
-        axios.post('/api/genres', {
+        axios.post('/api/genres/', {
             name
         }).then(res => {
             setSuccess(true)

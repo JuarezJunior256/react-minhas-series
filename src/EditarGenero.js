@@ -13,7 +13,9 @@ const EditarGenero = ({ match }) => {
         })
     },[match.params.id])
 
-    console.log(match)
+    const onChange = evt => {
+        setName(evt.target.value) //recebendo valor do input pelo onChange
+    }
     
     const save = () => {
         axios.put('/api/genres/' + match.params.id, {
