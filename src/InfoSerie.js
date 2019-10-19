@@ -3,18 +3,35 @@ import axios from 'axios'
 import { Redirect } from 'react-router-dom'
 import { Badge } from 'reactstrap'
 
-const InfoSerie = ( {match} ) => {
-    const [name, setName] = useState('') 
+const InfoSerie = ({ match }) => {
+    const [form, setForm] = useState({})
     const [success, setSuccess] = useState(false)
-    const [mode, setMode] =  useState('INFO')
+    const [mode, setMode] = useState('EDIT')
+    const [genres, setGenres] = useState([])
+    const [genreId, setGenreId] = useState('')
+
 
     const [data, setData] = useState({})
     useEffect(() => {
         axios.get('/api/series/' + match.params.id)
-        .then(res => { 
-           setData(res.data)
-        })
+            .then(res => {
+                setData(res.data)
+                setForm(res.data)
+            })
+
     }, [match.params.id])
+
+    useEffect(() => {
+        axios.get('/api/genres')
+            .then(res => {
+                setGenres(res.data.data)
+                const genres = res.data.data
+                const encontrado = genres.find(value => form.genre === value.name)
+            if  (encontrado) {
+                setGenreId(encontrado.id)
+            }
+            })
+    }, [data])
 
     //custom Header
     const masterHeader = {
@@ -26,55 +43,102 @@ const InfoSerie = ( {match} ) => {
         backgroundRepeat: 'no-repeat'
     }
 
-    const onChange = evt => {
-        setName(evt.target.value) //recebendo valor do input pelo onChange
+    const onChange = field => evt => {
+        setForm({
+            ...form,
+            [field]: evt.target.value
+        }) //recebendo valor do input pelo onChange
     }
 
-    const save = () => {
-        
-        axios.post('/api/series/', {
-            name
-        }).then(res => {
-            setSuccess(true)
+    const seleciona = value => () => {
+        setForm({
+            ...form,
+            status: value
         })
     }
 
+    const save = () => {
+
+        axios.put('/api/series/' + match.params.id, {
+            ...form,
+            genre_id: genreId
+            })
+            .then(res => {
+                setSuccess(true)
+            })
+    }
+
     if (success) {
-       return <Redirect to='/series'/>
-    }  
-    
+        // return <Redirect to='/series' />
+    }
+
     return (
         <div>
             <header style={masterHeader}>
-                <div className='h-100' style={{background: 'rgba(0,0,0,0.7)'}}>
+                <div className='h-100' style={{ background: 'rgba(0,0,0,0.7)' }}>
                     <div className='h-100 container'>
                         <div className='row h-100 align-items-center'>
                             <div className='col-3'>
-                                <img alt={data.name} className='img-fluid img-thumbnail' src={data.poster}/>
+                                <img alt={data.name} className='img-fluid img-thumbnail' src={data.poster} />
                             </div>
                             <div className='col-8'>
                                 <h1 className='font-weight-light text-white'>{data.name}</h1>
                                 <div className='lead text-white'>
-                                   <Badge color='success'>Assistido</Badge>
-                                   <Badge color='warning'>Para assistir</Badge> 
+                                    <Badge color='success'>Assistido</Badge>
+                                    <Badge color='warning'>Para assistir</Badge>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </header>        
-            <div className='container'>
-                <h1>Nova Série</h1>
-                <pre>{JSON.stringify(data)}</pre>
-                <form>
-                    <div className='form-group'>
-                        <label htmlFor='nome'>Nome</label>
-                        <input type='text' value={name} onChange={onChange} className='form-control' 
-                            id='nome' placeholder='Nome da Série'/>
-                    </div> 
-                    <button type='button' onClick={save} className='btn btn-primary'>Salvar</button>
-                </form>
+            </header>
+            <div>
+                <button className='btn btn-primary' onClick={() => setMode('EDIT')}>Editar</button>
             </div>
+            {
+                mode === 'EDIT' &&
+                <div className='container'>
+                    <h1>Nova Série</h1>
+                    <pre>{JSON.stringify(form)}</pre>
+                    <button className='btn btn-primary' onClick={() => setMode('INFO')}>Cancelar edição</button>
+                    <form>
+                        <div className='form-group'>
+                            <label htmlFor='nome'>Nome</label>
+                            <input type='text' value={form.name} onChange={onChange('name')} className='form-control'
+                                id='nome' placeholder='Nome da Série' />
+                        </div>
+                        <div className='form-group'>
+                            <label htmlFor='nome'>Comentários</label>
+                            <input type='text' value={form.comments} onChange={onChange('comments')} className='form-control'
+                                id='nome' placeholder='Nome da Série' />
+                        </div>
+                        <div className='form-group'>
+                            <label htmlFor='nome'>Gênero</label>
+                            <select className='form-control' onChange={onChange('genre_id')}>
+                                {genres.map(g =>
+                                    <option key={g.id} value={g.id} select={g.id === form.genre}>{g.name}</option>)
+                                }
+                            </select>
+                        </div>
+                        <div className='form-check'>
+                            <input className='form-check-input' type='radio' name='status' id='assistido'
+                                value='ASSISTIDO' onClick={seleciona('ASSISTIDO')}/>
+                            <label className='form-check-label' htmlFor='assistido'>
+                                Assistido
+                            </label>
+                        </div>
+                        <div className='form-check'>
+                            <input className='form-check-input' type='radio' name='status' id='paraAssistir'
+                                value='PARA_ASSISTIR' onClick={seleciona('PARAASSISTIR')}/>
+                            <label className='form-check-label' htmlFor='paraAssistir'>
+                                Para assistir
+                            </label>
+                        </div>
+                        <button type='button' onClick={save} className='btn btn-primary'>Salvar</button>
+                    </form>
+                </div>
+
+            }
         </div>
     )
 }
