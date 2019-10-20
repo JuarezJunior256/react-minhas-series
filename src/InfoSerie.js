@@ -4,21 +4,22 @@ import { Redirect } from 'react-router-dom'
 import { Badge } from 'reactstrap'
 
 const InfoSerie = ({ match }) => {
-    const [form, setForm] = useState({})
+    const [form, setForm] = useState({name: ''})
     const [success, setSuccess] = useState(false)
-    const [mode, setMode] = useState('EDIT')
+    const [mode, setMode] = useState('INFO')
     const [genres, setGenres] = useState([])
     const [genreId, setGenreId] = useState('')
 
 
     const [data, setData] = useState({})
     useEffect(() => {
+      
         axios.get('/api/series/' + match.params.id)
             .then(res => {
                 setData(res.data)
                 setForm(res.data)
             })
-
+    
     }, [match.params.id])
 
     useEffect(() => {
@@ -26,10 +27,10 @@ const InfoSerie = ({ match }) => {
             .then(res => {
                 setGenres(res.data.data)
                 const genres = res.data.data
-                const encontrado = genres.find(value => form.genre === value.name)
-            if  (encontrado) {
-                setGenreId(encontrado.id)
-            }
+                const encontrado = genres.find(v => form.genre === v.name)
+                if (encontrado) {
+                    setGenreId(encontrado.id)
+                }
             })
     }, [data])
 
@@ -43,11 +44,15 @@ const InfoSerie = ({ match }) => {
         backgroundRepeat: 'no-repeat'
     }
 
+    const onChangeGenre = evt => {
+        setGenreId(evt.target.value)
+    }
+
     const onChange = field => evt => {
         setForm({
             ...form,
             [field]: evt.target.value
-        }) //recebendo valor do input pelo onChange
+        }) //recebendo valor dos inputs do formulario pelo onChange
     }
 
     const seleciona = value => () => {
@@ -62,14 +67,14 @@ const InfoSerie = ({ match }) => {
         axios.put('/api/series/' + match.params.id, {
             ...form,
             genre_id: genreId
-            })
+        })
             .then(res => {
                 setSuccess(true)
             })
     }
 
     if (success) {
-        // return <Redirect to='/series' />
+      return <Redirect to='/series' />
     }
 
     return (
@@ -84,21 +89,21 @@ const InfoSerie = ({ match }) => {
                             <div className='col-8'>
                                 <h1 className='font-weight-light text-white'>{data.name}</h1>
                                 <div className='lead text-white'>
-                                    <Badge color='success'>Assistido</Badge>
-                                    <Badge color='warning'>Para assistir</Badge>
+                                    {data.status === 'ASSISTIDO' && <Badge color='success'>Assistido</Badge>}
+                                    {data.status === 'PARAASSISTIR' && <Badge color='warning'>Para Assistir</Badge>}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </header>
-            <div>
+            <div className='container'>
                 <button className='btn btn-primary' onClick={() => setMode('EDIT')}>Editar</button>
             </div>
             {
                 mode === 'EDIT' &&
                 <div className='container'>
-                    <h1>Nova Série</h1>
+                    <h1>Editar Série</h1>
                     <pre>{JSON.stringify(form)}</pre>
                     <button className='btn btn-primary' onClick={() => setMode('INFO')}>Cancelar edição</button>
                     <form>
@@ -114,22 +119,22 @@ const InfoSerie = ({ match }) => {
                         </div>
                         <div className='form-group'>
                             <label htmlFor='nome'>Gênero</label>
-                            <select className='form-control' onChange={onChange('genre_id')}>
-                                {genres.map(g =>
-                                    <option key={g.id} value={g.id} select={g.id === form.genre}>{g.name}</option>)
+                            <select className='form-control' onChange={onChangeGenre} value={genreId}>
+                                {
+                                  genres.map(g => <option key={g.id} value={g.id}>{g.name}</option>)
                                 }
                             </select>
                         </div>
                         <div className='form-check'>
                             <input className='form-check-input' type='radio' name='status' id='assistido'
-                                value='ASSISTIDO' onClick={seleciona('ASSISTIDO')}/>
+                                value='ASSISTIDO' checked={form.status === 'ASSISTIDO'} onChange={seleciona('ASSISTIDO')} />
                             <label className='form-check-label' htmlFor='assistido'>
                                 Assistido
                             </label>
                         </div>
                         <div className='form-check'>
                             <input className='form-check-input' type='radio' name='status' id='paraAssistir'
-                                value='PARA_ASSISTIR' onClick={seleciona('PARAASSISTIR')}/>
+                                value='PARA_ASSISTIR' checked={form.status === 'PARAASSISTIR'} onChange={seleciona('PARAASSISTIR')} />
                             <label className='form-check-label' htmlFor='paraAssistir'>
                                 Para assistir
                             </label>
