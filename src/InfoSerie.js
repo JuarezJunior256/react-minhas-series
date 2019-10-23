@@ -11,24 +11,27 @@ const InfoSerie = ({ match }) => {
     const [genreId, setGenreId] = useState('')
 
 
+    // recebendo dados das series vinda da api/:id
     const [data, setData] = useState({})
     useEffect(() => {
       
         axios.get('/api/series/' + match.params.id)
             .then(res => {
-                setData(res.data)
-                setForm(res.data)
+                setData(res.data) // setando na variável de dados
+                setForm(res.data) // setando na variável de formulário
             })
     
     }, [match.params.id])
 
+    // recebendo dadaos da api de gênero 
     useEffect(() => {
         axios.get('/api/genres')
             .then(res => {
-                setGenres(res.data.data)
-                const genres = res.data.data
-                const encontrado = genres.find(v => form.genre === v.name)
+                setGenres(res.data.data) // setando na várivel de generos
+                const genres = res.data.data // criando uma varíavel para receber dados da api para fazer uma busca no array
+                const encontrado = genres.find(v => form.genre === v.name) // buscando na varivel de genero 
                 if (encontrado) {
+                    // se for encontrada a variavel seta na generoId
                     setGenreId(encontrado.id)
                 }
             })
@@ -44,6 +47,7 @@ const InfoSerie = ({ match }) => {
         backgroundRepeat: 'no-repeat'
     }
 
+    // pegando valor da compo genero 
     const onChangeGenre = evt => {
         setGenreId(evt.target.value)
     }
@@ -55,6 +59,7 @@ const InfoSerie = ({ match }) => {
         }) //recebendo valor dos inputs do formulario pelo onChange
     }
 
+    // pegando valor do checkbox 
     const seleciona = value => () => {
         setForm({
             ...form,
@@ -62,6 +67,7 @@ const InfoSerie = ({ match }) => {
         })
     }
 
+    // salvando dados na api 
     const save = () => {
 
         axios.put('/api/series/' + match.params.id, {
